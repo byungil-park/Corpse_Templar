@@ -85,7 +85,7 @@ void CScene::BuildObjects(ID3D12Device *pd3dDevice, ID3D12GraphicsCommandList *p
 {
 	m_pd3dGraphicsRootSignature = CreateGraphicsRootSignature(pd3dDevice);
 
-	CreateCbvSrvDescriptorHeaps(pd3dDevice, 0, 76); //SuperCobra(17), Gunship(2), Player:Mi24(1), Angrybot()
+	CreateCbvSrvDescriptorHeaps(pd3dDevice, 0, 44); //SuperCobra(17), Gunship(2), Player:Mi24(1), Angrybot()
 
 	CMaterial::PrepareShaders(pd3dDevice, pd3dCommandList, m_pd3dGraphicsRootSignature); 
 
@@ -239,17 +239,25 @@ void CScene::BuildObjects(ID3D12Device *pd3dDevice, ID3D12GraphicsCommandList *p
 	
 	*/
 ///*
-	m_nShaders = 1;
-	m_ppShaders = new CEthanObjectsShader *[m_nShaders];
+	m_nShaders = 2;
+	m_ppShaders = new CSkinnedAnimationObjectsShader *[m_nShaders];
 
-	CLoadedModelInfo* pEthanModel = CGameObject::LoadGeometryAndAnimationFromFile(pd3dDevice, pd3dCommandList, m_pd3dGraphicsRootSignature, "Model/SoldierMelee.bin", NULL);
+	CLoadedModelInfo* pEthanModel = CGameObject::LoadGeometryAndAnimationFromFile(pd3dDevice, pd3dCommandList, m_pd3dGraphicsRootSignature, "Model/Monster.bin", NULL);
 
 	CEthanObjectsShader *pEthanObjectsShader = new CEthanObjectsShader();
 	pEthanObjectsShader->BuildObjects(pd3dDevice, pd3dCommandList, m_pd3dGraphicsRootSignature, pEthanModel, m_pTerrain);
 
 	m_ppShaders[0] = pEthanObjectsShader;
+
+	CLoadedModelInfo* pMonsterModel = CGameObject::LoadGeometryAndAnimationFromFile(pd3dDevice, pd3dCommandList, m_pd3dGraphicsRootSignature, "Model/Monster.bin", NULL);
+
+	CAngrybotObjectsShader* pAngrybotObjectShader = new CAngrybotObjectsShader();
+	pAngrybotObjectShader->BuildObjects(pd3dDevice, pd3dCommandList, m_pd3dGraphicsRootSignature, pMonsterModel, m_pTerrain);
+
+	m_ppShaders[1] = pAngrybotObjectShader;
 //*/
 	if (pEthanModel) delete pEthanModel;
+	if (pMonsterModel) delete pMonsterModel;
 
 	CreateShaderVariables(pd3dDevice, pd3dCommandList);
 }
@@ -674,11 +682,11 @@ CGameObject* CScene::PickObjectPointedByCursor(int xClient, int yClient, CCamera
 
 	int nIntersected = 0;
 	float fHitDistance = FLT_MAX, fNearestHitDistance = FLT_MAX;
-	CGameObject* pNearestObject = NULL;
+	
 	//셰이더의 모든 게임 객체들에 대한 마우스 픽킹을 수행하여 카메라와 가장 가까운 게임 객체를 구한다.
 	for (int i = 0; i < m_nShaders; i++)
 	{
-		for (int j = 0; j < m_nShaders; j++)
+		for (int j = 0; j < m_nShaders-1; j++)
 		{
 			pIntersectedObject = m_ppShaders[i][j].PickObjectByRayIntersection(xmf3PickPosition, xmf4x4View, &fHitDistance);
 			if (pIntersectedObject && (fHitDistance < fNearestHitDistance))

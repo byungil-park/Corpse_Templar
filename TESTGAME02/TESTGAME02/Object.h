@@ -377,6 +377,8 @@ public:
 
 	CPlayer* m_pPlayer = NULL;
 
+	float							m_fDelayTime = 0.0f;
+
 	void SetMesh(CMesh *pMesh);
 	void SetShader(CShader *pShader);
 	void SetShader(int nMaterial, CShader *pShader);
@@ -413,11 +415,14 @@ public:
 	void SetMaxVelocity(float fMaxVelocity) { m_fMaxVelocity = fMaxVelocity; }
 	void SetCognizance(float fCognizance) { m_fCognizance = fCognizance; }
 	void SetContext(LPVOID pObjectUpdatedContext) { m_pObjectUpdatedContext = pObjectUpdatedContext; }
+	void SetRadius(float fBoundSphereRadius) { m_fBoundSphereSize = fBoundSphereRadius; }
 
 	float GetCognizance() { return m_fCognizance; }
 	float GetRadius() { return m_fBoundSphereSize; }
 	XMFLOAT3 GetVelocity() { return m_xmf3Velocity; }
 	float GetMaxVelocity() { return m_fMaxVelocity; }
+
+	virtual float CalculateDistance(XMFLOAT3 xmf3OtherPos);
 
 	XMFLOAT3 GetToParentPosition();
 	void Move(XMFLOAT3 xmf3Offset);

@@ -893,6 +893,13 @@ void CGameObject::ReleaseUploadBuffers()
 	if (m_pChild) m_pChild->ReleaseUploadBuffers();
 }
 
+float CGameObject::CalculateDistance(XMFLOAT3 xmf3OtherPos)
+{
+	XMFLOAT3 xmf3Distance = Vector3::Subtract(xmf3OtherPos, GetPosition());
+	float fDistance = sqrtf((xmf3Distance.x * xmf3Distance.x) + (xmf3Distance.y * xmf3Distance.y) + (xmf3Distance.z * xmf3Distance.z));
+	return fDistance;
+}
+
 void CGameObject::SetPosition(float x, float y, float z)
 {
 	m_xmf4x4ToParent._41 = x;
@@ -927,7 +934,7 @@ void CGameObject::SetScale(float x, float y, float z)
 void CGameObject::SetTarget(XMFLOAT3 xmf3TargetPosition, bool bIsPlayer)
 {
 	m_xmf3TargetPos = xmf3TargetPosition;
-	/*
+	
 	XMFLOAT3 xmf3Look = Vector3::Normalize(Vector3::Subtract(m_xmf3TargetPos, GetPosition()));
 	XMFLOAT3 xmf3Right = Vector3::CrossProduct(XMFLOAT3(0.0f, 1.0f, 0.0f), xmf3Look);
 	XMFLOAT3 xmf3Up = Vector3::CrossProduct(xmf3Look, xmf3Right, true);
@@ -941,14 +948,14 @@ void CGameObject::SetTarget(XMFLOAT3 xmf3TargetPosition, bool bIsPlayer)
 	m_xmf4x4ToParent._31 = xmf3Look.x;
 	m_xmf4x4ToParent._32 = xmf3Look.y;
 	m_xmf4x4ToParent._33 = xmf3Look.z;
-	*/
+	
 	
 	if (bIsPlayer) SetVelocity(XMFLOAT3(0.0f, 0.0f, 0.0f));
 	else
 	{
 		XMFLOAT3 xmf3Velocity = Vector3::Subtract(m_xmf3TargetPos, GetPosition());
 		SetVelocity(XMFLOAT3(xmf3Velocity.x, xmf3Velocity.y, xmf3Velocity.z));
-		SetMaxVelocity(80.0f);
+		SetMaxVelocity(40.0f);
 	}
 	
 }
@@ -1733,6 +1740,7 @@ CEthanObject::CEthanObject(ID3D12Device *pd3dDevice, ID3D12GraphicsCommandList *
 
 	m_xmf3Velocity = XMFLOAT3(0.0f, 0.0f, 0.0f);
 	//m_fMaxVelocity = 80.0f;
+	m_fCognizance = 20.0f;
 }
 
 CEthanObject::~CEthanObject()

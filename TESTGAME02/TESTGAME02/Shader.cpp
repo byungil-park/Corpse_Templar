@@ -462,13 +462,13 @@ float Random()
 	return(rand() / float(RAND_MAX));
 }
 
-XMFLOAT3 RandomPositionInSphere(XMFLOAT3 xmf3Center, float fRadius, int nColumn, int nColumnSpace)
+XMFLOAT3 RandomPositionInSphere(XMFLOAT3 xmf3Center, float fRadius)
 {
     float fAngle = Random() * 360.0f * (2.0f * 3.14159f / 360.0f);
 
 	XMFLOAT3 xmf3Position;
     xmf3Position.x = xmf3Center.x + fRadius * sin(fAngle);
-    xmf3Position.y = xmf3Center.y - (nColumn * float(nColumnSpace) / 2.0f) + (nColumn * nColumnSpace) + Random();
+    xmf3Position.y = xmf3Center.y;
     xmf3Position.z = xmf3Center.z + fRadius * cos(fAngle);
 
 	return(xmf3Position);
@@ -503,9 +503,9 @@ void CHellicopterObjectsShader::BuildObjects(ID3D12Device *pd3dDevice, ID3D12Gra
 				m_ppObjects[nObjects]->SetChild(pGunshipModel->m_pModelRootObject, true);
 			}
 			float fHeight = pTerrain->GetHeight(390.0f, 670.0f);
-			XMFLOAT3 xmf3Position = RandomPositionInSphere(XMFLOAT3(390.0f, fHeight + 35.0f, 670.0f), Random(20.0f, 100.0f), h - int(floor(nColumnSize / 2.0f)), nColumnSpace);
-			xmf3Position.y = pTerrain->GetHeight(xmf3Position.x, xmf3Position.z) + Random(0.0f, 25.0f);
-			m_ppObjects[nObjects]->SetPosition(xmf3Position);
+			//XMFLOAT3 xmf3Position = RandomPositionInSphere(XMFLOAT3(390.0f, fHeight + 35.0f, 670.0f), Random(20.0f, 100.0f), h - int(floor(nColumnSize / 2.0f)), nColumnSpace);
+			//xmf3Position.y = pTerrain->GetHeight(xmf3Position.x, xmf3Position.z) + Random(0.0f, 25.0f);
+			//m_ppObjects[nObjects]->SetPosition(xmf3Position);
 			m_ppObjects[nObjects]->Rotate(0.0f, 90.0f, 0.0f);
 			m_ppObjects[nObjects++]->OnPrepareAnimate();
 		}
@@ -525,7 +525,7 @@ void CHellicopterObjectsShader::BuildObjects(ID3D12Device *pd3dDevice, ID3D12Gra
 				m_ppObjects[nObjects] = new CGunshipObject(pd3dDevice, pd3dCommandList, pd3dGraphicsRootSignature);
 				m_ppObjects[nObjects]->SetChild(pGunshipModel->m_pModelRootObject, true);
 			}
-			m_ppObjects[nObjects]->SetPosition(RandomPositionInSphere(XMFLOAT3(0.0f, 0.0f, 0.0f), Random(20.0f, 100.0f), nColumnSize - int(floor(nColumnSize / 2.0f)), nColumnSpace));
+			//m_ppObjects[nObjects]->SetPosition(RandomPositionInSphere(XMFLOAT3(0.0f, 0.0f, 0.0f), Random(20.0f, 100.0f), nColumnSize - int(floor(nColumnSize / 2.0f)), nColumnSpace));
 			m_ppObjects[nObjects]->Rotate(0.0f, 90.0f, 0.0f);
 			m_ppObjects[nObjects++]->OnPrepareAnimate();
         }
@@ -600,20 +600,39 @@ CAngrybotObjectsShader::~CAngrybotObjectsShader()
 
 void CAngrybotObjectsShader::BuildObjects(ID3D12Device *pd3dDevice, ID3D12GraphicsCommandList *pd3dCommandList, ID3D12RootSignature *pd3dGraphicsRootSignature, CLoadedModelInfo *pModel, void *pContext)
 {
-	int xObjects = 3, zObjects = 3, i = 0;
+	//int xObjects = 3, zObjects = 3, i = 0;
 
-	m_nObjects = (xObjects * 2 + 1) * (zObjects * 2 + 1);
+	//m_nObjects = (xObjects * 2 + 1) * (zObjects * 2 + 1);
+
+	CCubeMeshDiffused* pCubeMesh = new CCubeMeshDiffused(pd3dDevice, pd3dCommandList,
+		1.0f, 1.0f, 1.0f);
+
+	m_nObjects = 1;
 
 	m_ppObjects = new CGameObject*[m_nObjects];
 
-	float fxPitch = 7.0f * 2.5f;
-	float fzPitch = 7.0f * 2.5f;
+	//float fxPitch = 7.0f * 2.5f;
+	//float fzPitch = 7.0f * 2.5f;
 
 	CHeightMapTerrain *pTerrain = (CHeightMapTerrain *)pContext;
 
 	CLoadedModelInfo *pAngrybotModel = pModel;
 	if (!pAngrybotModel) pAngrybotModel = CGameObject::LoadGeometryAndAnimationFromFile(pd3dDevice, pd3dCommandList, pd3dGraphicsRootSignature, "Model/Angrybot.bin", NULL);
 
+	for (int i = 0; i < m_nObjects; i++)
+	{
+		m_ppObjects[i] = new CAngrybotObject(pd3dDevice, pd3dCommandList, pd3dGraphicsRootSignature, pAngrybotModel, 1);
+		m_ppObjects[i]->m_pSkinnedAnimationController->SetTrackAnimationSet(0, 0);
+		m_ppObjects[i]->m_pSkinnedAnimationController->SetTrackSpeed(0, 1.0f);
+		m_ppObjects[i]->m_pSkinnedAnimationController->SetTrackPosition(0, 0.85f);
+		XMFLOAT3 xmf3Position = XMFLOAT3(490.0f, 0.0f, 630.0f);
+		xmf3Position.y = pTerrain->GetHeight(xmf3Position.x, xmf3Position.z);
+		//m_ppObjects[i]->SetMesh(pCubeMesh);
+		m_ppObjects[i]->SetPosition(xmf3Position);
+		m_ppObjects[i]->SetScale(1.0f, 1.0f, 1.0f);
+	}
+
+	/*
 	int nObjects = 0;
 	for (int x = -xObjects; x <= xObjects; x++)
 	{
@@ -629,6 +648,8 @@ void CAngrybotObjectsShader::BuildObjects(ID3D12Device *pd3dDevice, ID3D12Graphi
 			m_ppObjects[nObjects++]->SetScale(2.0f, 2.0f, 2.0f);
 		}
     }
+	*/
+
 
 	CreateShaderVariables(pd3dDevice, pd3dCommandList);
 
@@ -647,7 +668,7 @@ CEthanObjectsShader::~CEthanObjectsShader()
 
 void CEthanObjectsShader::BuildObjects(ID3D12Device *pd3dDevice, ID3D12GraphicsCommandList *pd3dCommandList, ID3D12RootSignature *pd3dGraphicsRootSignature, CLoadedModelInfo *pModel, void *pContext)
 {
-	int xObjects = 3, zObjects = 3, i = 0;
+	int xObjects = 1, zObjects = 1, i = 0;
 
 	m_nObjects = (xObjects * 2 + 1) * (zObjects * 2 + 1) ;
 
@@ -675,8 +696,9 @@ void CEthanObjectsShader::BuildObjects(ID3D12Device *pd3dDevice, ID3D12GraphicsC
 			m_ppObjects[nObjects]->m_pSkinnedAnimationController->SetTrackPosition(0, (nObjects % 10) * 0.35f);
 			XMFLOAT3 xmf3Position = XMFLOAT3(fxPitch*x + 290.0f, 5100.0f, 750.0f + fzPitch * z);
 			xmf3Position.y = pTerrain->GetHeight(xmf3Position.x, xmf3Position.z);
-			m_ppObjects[nObjects]->SetScale(125.0f, 125.0f, 125.0f);
-			m_ppObjects[nObjects]->SetMesh(pCubeMesh);
+			m_ppObjects[nObjects]->SetScale(1.0f, 1.0f, 1.0f);
+			//m_ppObjects[nObjects]->SetMesh(pCubeMesh);
+			m_ppObjects[nObjects]->SetRadius(5.5f);
 			m_ppObjects[nObjects++]->SetPosition(xmf3Position);
 		}
     }
@@ -704,17 +726,49 @@ void CEthanObjectsShader::AnimateObjects(float fTimeElapsed)
 			SelectPos.y = pSelectedObject->m_xmf4x4ToParent._42;
 			SelectPos.z = pSelectedObject->m_xmf4x4ToParent._43;
 			m_ppObjects[i]->SetTarget(SelectPos, false);
+			
 		}
 		else
 		{
-
+			
+			XMFLOAT3 PPosition = m_pPlayer->GetPosition();
+			XMFLOAT3 RandomPosition = RandomPositionInSphere(PPosition, Random(50, 50));
+			m_ppObjects[i]->SetTarget(RandomPosition, false);
+			m_ppObjects[i]->m_pSkinnedAnimationController->SetTrackAnimationSet(0, 1);
+			CheckObjectByPlayerCollisions();
+			
 		}
 	}
-
-	
 }
 
-CGameObject* CEthanObjectsShader::PickObjectByRayIntersection(XMFLOAT3& xmf3PickPosition,
+void CEthanObjectsShader::CheckObjectByPlayerCollisions()
+{
+	for (int i = 0; i < m_nObjects; ++i)
+	{
+		
+		float fDistance = m_ppObjects[i]->CalculateDistance(m_pPlayer->GetPosition());
+		/*
+		if (fDistance <= (m_ppObjects[i]->GetRadius() + m_pPlayer->GetRadius())) {
+			XMFLOAT3 xmf3PlayerPos = m_pPlayer->GetPosition();
+			XMFLOAT3 xmf3ObjPos = m_ppObjects[i]->GetPosition();
+
+			XMFLOAT3 xmf3Impulse = XMFLOAT3(xmf3PlayerPos.x - xmf3ObjPos.x, xmf3PlayerPos.y - xmf3ObjPos.y, xmf3PlayerPos.z - xmf3ObjPos.z);
+			xmf3Impulse.x *= 10.0f;
+			xmf3Impulse.y *= 10.0f;
+			xmf3Impulse.z *= 10.0f;
+			m_pPlayer->SetVelocity(xmf3Impulse);
+		}
+		*/
+		if (fDistance <= m_ppObjects[i]->GetCognizance())
+		{
+			m_ppObjects[i]->SetTarget(m_pPlayer->GetPosition(), true);
+			m_ppObjects[i]->m_pSkinnedAnimationController->SetTrackAnimationSet(0, 0);
+		}
+		
+	}
+}
+
+CGameObject* CSkinnedAnimationObjectsShader::PickObjectByRayIntersection(XMFLOAT3& xmf3PickPosition,
 	XMFLOAT4X4& xmf4x4View, float* pfNearHitDistance)
 {
 	int nIntersected = 0;

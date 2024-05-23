@@ -66,6 +66,8 @@ public:
 	CPlayer								*m_pPlayer = NULL;
 	CGameObject							*pIntersectedObject = NULL;
 
+	CGameObject							*pNearestObject = NULL;
+
 protected:
 	ID3D12RootSignature					*m_pd3dGraphicsRootSignature = NULL;
 
@@ -111,7 +113,10 @@ public:
 	int									m_nObjectShaders = 0;
 
 	int									m_nShaders = 0;
-	CEthanObjectsShader					**m_ppShaders = NULL;
+	CSkinnedAnimationObjectsShader		**m_ppShaders = NULL;
+
+	int									m_nEShader = 0;
+	CAngrybotObjectsShader				**m_ppEShaders = NULL;
 
 	CSkyBox								*m_pSkyBox = NULL;
 	CHeightMapTerrain					*m_pTerrain = NULL;

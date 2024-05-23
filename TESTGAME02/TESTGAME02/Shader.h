@@ -54,6 +54,8 @@ public:
 
 	bool OnProcessingMouseMessage(HWND hWnd, UINT nMessageID, WPARAM wParam, LPARAM lParam);
 
+	
+
 protected:
 	ID3DBlob							*m_pd3dVertexShaderBlob = NULL;
 	ID3DBlob							*m_pd3dPixelShaderBlob = NULL;
@@ -172,6 +174,10 @@ public:
 
 	virtual void Render(ID3D12GraphicsCommandList *pd3dCommandList, CCamera *pCamera);
 
+	//셰이더에 포함되어 있는 모든 게임 객체들에 대한 마우스 픽킹을 수행한다. 
+	virtual CGameObject* PickObjectByRayIntersection(XMFLOAT3& xmf3PickPosition,
+		XMFLOAT4X4& xmf4x4View, float* pfNearHitDistance);
+
 protected:
 	CGameObject						**m_ppObjects = 0;
 	int								m_nObjects = 0;
@@ -201,9 +207,8 @@ public:
 	virtual void BuildObjects(ID3D12Device *pd3dDevice, ID3D12GraphicsCommandList *pd3dCommandList, ID3D12RootSignature *pd3dGraphicsRootSignature, CLoadedModelInfo *pModel, void *pContext = NULL);
 
 	virtual void AnimateObjects(float fTimeElapsed);
+	void CheckObjectByPlayerCollisions();
 
-	//셰이더에 포함되어 있는 모든 게임 객체들에 대한 마우스 픽킹을 수행한다. 
-	virtual CGameObject* PickObjectByRayIntersection(XMFLOAT3& xmf3PickPosition,
-		XMFLOAT4X4& xmf4x4View, float* pfNearHitDistance);
+	
 };
 
