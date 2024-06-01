@@ -80,9 +80,9 @@ int CMesh::CheckRayIntersection(XMFLOAT3& xmf3RayOrigin, XMFLOAT3& xmf3RayDirect
 {
 	//하나의 메쉬에서 광선은 여러 개의 삼각형과 교차할 수 있다. 교차하는 삼각형들 중 가장 가까운 삼각형을 찾는다. 
 	int nIntersections = 0;
-	BYTE* pbPositions = (BYTE*)m_pVertices;
+	BYTE* pbPositions = (BYTE*)m_pxmf3Positions;
 
-	m_nStride = sizeof(CDiffusedVertex);
+	m_nStride = sizeof(XMFLOAT3);
 
 	int nOffset = (m_d3dPrimitiveTopology == D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST) ? 3 : 1;
 	/*메쉬의 프리미티브(삼각형)들의 개수이다. 삼각형 리스트인 경우 (정점의 개수 / 3) 또는 (인덱스의 개수 / 3), 삼각
@@ -435,86 +435,6 @@ CSkyBoxMesh::~CSkyBoxMesh()
 {
 }
 
-CCubeMeshDiffused::CCubeMeshDiffused(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList
-	* pd3dCommandList, float fWidth, float fHeight, float fDepth) : CMesh(pd3dDevice,
-		pd3dCommandList)
-{
-	//직육면체는 꼭지점(정점)이 8개이다. 
-	m_nVertices = 8;
-	m_nStride = sizeof(CDiffusedVertex);
-	//m_d3dPrimitiveTopology = D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
-
-	float fx = fWidth * 0.5f, fy = fHeight * 0.5f, fz = fDepth * 0.5f;
-
-	//정점 버퍼는 직육면체의 꼭지점 8개에 대한 정점 데이터를 가진다. 
-	m_pVertices = new CDiffusedVertex[m_nVertices];
-	m_pVertices[0] = CDiffusedVertex(XMFLOAT3(-fx, +fy, -fz), RANDOM_COLOR);
-	m_pVertices[1] = CDiffusedVertex(XMFLOAT3(+fx, +fy, -fz), RANDOM_COLOR);
-	m_pVertices[2] = CDiffusedVertex(XMFLOAT3(+fx, +fy, +fz), RANDOM_COLOR);
-	m_pVertices[3] = CDiffusedVertex(XMFLOAT3(-fx, +fy, +fz), RANDOM_COLOR);
-	m_pVertices[4] = CDiffusedVertex(XMFLOAT3(-fx, -fy, -fz), RANDOM_COLOR);
-	m_pVertices[5] = CDiffusedVertex(XMFLOAT3(+fx, -fy, -fz), RANDOM_COLOR);
-	m_pVertices[6] = CDiffusedVertex(XMFLOAT3(+fx, -fy, +fz), RANDOM_COLOR);
-	m_pVertices[7] = CDiffusedVertex(XMFLOAT3(-fx, -fy, +fz), RANDOM_COLOR);
-
-	m_pd3dPositionBuffer = ::CreateBufferResource(pd3dDevice, pd3dCommandList, m_pVertices,
-		m_nStride * m_nVertices, D3D12_HEAP_TYPE_DEFAULT,
-		D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER, &m_pd3dPositionUploadBuffer);
-
-	m_d3dPositionBufferView.BufferLocation = m_pd3dPositionBuffer->GetGPUVirtualAddress();
-	m_d3dPositionBufferView.StrideInBytes = m_nStride;
-	m_d3dPositionBufferView.SizeInBytes = m_nStride * m_nVertices;
-
-	/*인덱스 버퍼는 직육면체의 6개의 면(사각형)에 대한 기하 정보를 갖는다. 삼각형 리스트로 직육면체를 표현할 것이
-	므로 각 면은 2개의 삼각형을 가지고 각 삼각형은 3개의 정점이 필요하다. 즉, 인덱스 버퍼는 전체 36(=6*2*3)개의 인
-	덱스를 가져야 한다.*/
-	/*
-	m_nIndices = 36;
-
-	m_pnIndices = new UINT[m_nIndices];
-	//ⓐ 앞면(Front) 사각형의 위쪽 삼각형
-	m_pnIndices[0] = 3; m_pnIndices[1] = 1; m_pnIndices[2] = 0;
-	//ⓑ 앞면(Front) 사각형의 아래쪽 삼각형
-	m_pnIndices[3] = 2; m_pnIndices[4] = 1; m_pnIndices[5] = 3;
-	//ⓒ 윗면(Top) 사각형의 위쪽 삼각형
-	m_pnIndices[6] = 0; m_pnIndices[7] = 5; m_pnIndices[8] = 4;
-	//ⓓ 윗면(Top) 사각형의 아래쪽 삼각형
-	m_pnIndices[9] = 1; m_pnIndices[10] = 5; m_pnIndices[11] = 0;
-	//ⓔ 뒷면(Back) 사각형의 위쪽 삼각형
-	m_pnIndices[12] = 3; m_pnIndices[13] = 4; m_pnIndices[14] = 7;
-	//ⓕ 뒷면(Back) 사각형의 아래쪽 삼각형
-	m_pnIndices[15] = 0; m_pnIndices[16] = 4; m_pnIndices[17] = 3;
-	//ⓖ 아래면(Bottom) 사각형의 위쪽 삼각형
-	m_pnIndices[18] = 1; m_pnIndices[19] = 6; m_pnIndices[20] = 5;
-	//ⓗ 아래면(Bottom) 사각형의 아래쪽 삼각형
-	m_pnIndices[21] = 2; m_pnIndices[22] = 6; m_pnIndices[23] = 1;
-	//ⓘ 옆면(Left) 사각형의 위쪽 삼각형
-	m_pnIndices[24] = 2; m_pnIndices[25] = 7; m_pnIndices[26] = 6;
-	//ⓙ 옆면(Left) 사각형의 아래쪽 삼각형
-	m_pnIndices[27] = 3; m_pnIndices[28] = 7; m_pnIndices[29] = 2;
-	//ⓚ 옆면(Right) 사각형의 위쪽 삼각형
-	m_pnIndices[30] = 6; m_pnIndices[31] = 4; m_pnIndices[32] = 5;
-	//ⓛ 옆면(Right) 사각형의 아래쪽 삼각형
-	m_pnIndices[33] = 7; m_pnIndices[34] = 4; m_pnIndices[35] = 6;
-
-	//인덱스 버퍼를 생성한다. 
-	m_pd3dIndexBuffer = ::CreateBufferResource(pd3dDevice, pd3dCommandList, m_pnIndices,
-		sizeof(UINT) * m_nIndices, D3D12_HEAP_TYPE_DEFAULT, D3D12_RESOURCE_STATE_INDEX_BUFFER,
-		&m_pd3dIndexUploadBuffer);
-
-	//인덱스 버퍼 뷰를 생성한다. 
-	m_d3dIndexBufferView.BufferLocation = m_pd3dIndexBuffer->GetGPUVirtualAddress();
-	m_d3dIndexBufferView.Format = DXGI_FORMAT_R32_UINT;
-	m_d3dIndexBufferView.SizeInBytes = sizeof(UINT) * m_nIndices;
-	*/
-	//메쉬의 바운딩 박스(모델 좌표계)를 생성한다. 
-	m_xmBoundingBox = BoundingOrientedBox(XMFLOAT3(0.0f, 0.0f, 0.0f), XMFLOAT3(fx, fy,
-		fz), XMFLOAT4(0.0f, 0.0f, 0.0f, 1.0f));
-}
-
-CCubeMeshDiffused::~CCubeMeshDiffused()
-{
-}
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
 //
@@ -568,8 +488,8 @@ void CStandardMesh::LoadMeshFromFile(ID3D12Device *pd3dDevice, ID3D12GraphicsCom
 		::ReadStringFromFile(pInFile, pstrToken);
 		if (!strcmp(pstrToken, "<Bounds>:"))
 		{
-			nReads = (UINT)::fread(&m_xmf3AABBCenter, sizeof(XMFLOAT3), 1, pInFile);
-			nReads = (UINT)::fread(&m_xmf3AABBExtents, sizeof(XMFLOAT3), 1, pInFile);
+			nReads = (UINT)::fread(&m_xmBoundingBox.Center, sizeof(float), 3, pInFile);
+			nReads = (UINT)::fread(&m_xmBoundingBox.Extents, sizeof(float), 3, pInFile);
 			m_xmBoundingBox.Orientation = XMFLOAT4(0.0f, 0.0f, 0.0f, 1.0f);
 		}
 		else if (!strcmp(pstrToken, "<Positions>:"))

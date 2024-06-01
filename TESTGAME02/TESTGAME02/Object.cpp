@@ -1425,14 +1425,14 @@ int CGameObject::PickObjectByRayIntersection(XMFLOAT3& xmf3PickPosition, XMFLOAT
 	xmf4x4View, float* pfHitDistance)
 {
 	int nIntersected = 0;
-	if (m_pMesh)
+	if (m_pSkinnedAnimationController->m_pRootMotionObject->m_pMesh)
 	{
 		XMFLOAT3 xmf3PickRayOrigin, xmf3PickRayDirection;
 		//¸ðµ¨ ÁÂÇ¥°èÀÇ ±¤¼±À» »ý¼ºÇÑ´Ù. 
 		GenerateRayForPicking(xmf3PickPosition, xmf4x4View, &xmf3PickRayOrigin,
 			&xmf3PickRayDirection);
 		//¸ðµ¨ ÁÂÇ¥°èÀÇ ±¤¼±°ú ¸Þ½¬ÀÇ ±³Â÷¸¦ °Ë»çÇÑ´Ù. 
-		nIntersected = m_pMesh->CheckRayIntersection(xmf3PickRayOrigin,
+		nIntersected = m_pSkinnedAnimationController->m_pRootMotionObject->m_pMesh->CheckRayIntersection(xmf3PickRayOrigin,
 			xmf3PickRayDirection, pfHitDistance);
 	}
 	return(nIntersected);
@@ -1635,6 +1635,10 @@ CAngrybotObject::CAngrybotObject(ID3D12Device *pd3dDevice, ID3D12GraphicsCommand
 
 	SetChild(pAngrybotModel->m_pModelRootObject, true);
 	m_pSkinnedAnimationController = new CAngrybotAnimationController(pd3dDevice, pd3dCommandList, nAnimationTracks, pAngrybotModel);
+
+	m_pSkinnedAnimationController->m_pRootMotionObject = pAngrybotModel->m_pModelRootObject->FindFrame("shield");
+
+	m_fCognizance = 10.0f;
 }
 
 CAngrybotObject::~CAngrybotObject()
@@ -1650,6 +1654,8 @@ CMonsterObject::CMonsterObject(ID3D12Device *pd3dDevice, ID3D12GraphicsCommandLi
 
 	SetChild(pMonsterModel->m_pModelRootObject, true);
 	m_pSkinnedAnimationController = new CAnimationController(pd3dDevice, pd3dCommandList, nAnimationTracks, pMonsterModel);
+
+	
 }
 
 CMonsterObject::~CMonsterObject()
@@ -1736,11 +1742,11 @@ CEthanObject::CEthanObject(ID3D12Device *pd3dDevice, ID3D12GraphicsCommandList *
 	SetChild(pEthanModel->m_pModelRootObject, true);
 	m_pSkinnedAnimationController = new CEthanAnimationController(pd3dDevice, pd3dCommandList, nAnimationTracks, pEthanModel);
 
-	m_pSkinnedAnimationController->m_pRootMotionObject = pEthanModel->m_pModelRootObject->FindFrame("EthanHips");
+	m_pSkinnedAnimationController->m_pRootMotionObject = pEthanModel->m_pModelRootObject->FindFrame("shield");
 
 	m_xmf3Velocity = XMFLOAT3(0.0f, 0.0f, 0.0f);
 	//m_fMaxVelocity = 80.0f;
-	m_fCognizance = 20.0f;
+	m_fCognizance = 15.0f;
 }
 
 CEthanObject::~CEthanObject()

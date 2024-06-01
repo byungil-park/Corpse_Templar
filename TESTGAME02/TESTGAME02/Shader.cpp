@@ -560,6 +560,12 @@ void CSkinnedAnimationObjectsShader::ReleaseObjects()
 		for (int j = 0; j < m_nObjects; j++) if (m_ppObjects[j]) m_ppObjects[j]->Release();
 		delete[] m_ppObjects;
 	}
+
+	if (m_PPEObjects)
+	{
+		for (int j = 0; j < m_nEObject; j++) if (m_PPEObjects[j]) m_PPEObjects[j]->Release();
+		delete[] m_PPEObjects;
+	}
 }
 
 void CSkinnedAnimationObjectsShader::AnimateObjects(float fTimeElapsed)
@@ -570,6 +576,8 @@ void CSkinnedAnimationObjectsShader::AnimateObjects(float fTimeElapsed)
 void CSkinnedAnimationObjectsShader::ReleaseUploadBuffers()
 {
 	for (int j = 0; j < m_nObjects; j++) if (m_ppObjects[j]) m_ppObjects[j]->ReleaseUploadBuffers();
+
+	for (int j = 0; j < m_nEObject; j++) if (m_PPEObjects[j]) m_PPEObjects[j]->ReleaseUploadBuffers();
 }
 
 void CSkinnedAnimationObjectsShader::Render(ID3D12GraphicsCommandList *pd3dCommandList, CCamera *pCamera)
@@ -582,6 +590,15 @@ void CSkinnedAnimationObjectsShader::Render(ID3D12GraphicsCommandList *pd3dComma
 		{
 			m_ppObjects[j]->Animate(m_fElapsedTime);
 			m_ppObjects[j]->Render(pd3dCommandList, pCamera);
+		}
+	}
+
+	for (int j = 0; j < m_nEObject; j++)
+	{
+		if (m_PPEObjects[j])
+		{
+			m_PPEObjects[j]->Animate(m_fElapsedTime);
+			m_PPEObjects[j]->Render(pd3dCommandList, pCamera);
 		}
 	}
 }
@@ -604,12 +621,9 @@ void CAngrybotObjectsShader::BuildObjects(ID3D12Device *pd3dDevice, ID3D12Graphi
 
 	//m_nObjects = (xObjects * 2 + 1) * (zObjects * 2 + 1);
 
-	CCubeMeshDiffused* pCubeMesh = new CCubeMeshDiffused(pd3dDevice, pd3dCommandList,
-		1.0f, 1.0f, 1.0f);
+	//m_nEObject = 1;
 
-	m_nObjects = 1;
-
-	m_ppObjects = new CGameObject*[m_nObjects];
+	//m_PPEObjects = new CGameObject*[m_nEObject];
 
 	//float fxPitch = 7.0f * 2.5f;
 	//float fzPitch = 7.0f * 2.5f;
@@ -619,17 +633,16 @@ void CAngrybotObjectsShader::BuildObjects(ID3D12Device *pd3dDevice, ID3D12Graphi
 	CLoadedModelInfo *pAngrybotModel = pModel;
 	if (!pAngrybotModel) pAngrybotModel = CGameObject::LoadGeometryAndAnimationFromFile(pd3dDevice, pd3dCommandList, pd3dGraphicsRootSignature, "Model/Angrybot.bin", NULL);
 
-	for (int i = 0; i < m_nObjects; i++)
+	for (int i = 0; i < m_nEObject; i++)
 	{
-		m_ppObjects[i] = new CAngrybotObject(pd3dDevice, pd3dCommandList, pd3dGraphicsRootSignature, pAngrybotModel, 1);
-		m_ppObjects[i]->m_pSkinnedAnimationController->SetTrackAnimationSet(0, 0);
-		m_ppObjects[i]->m_pSkinnedAnimationController->SetTrackSpeed(0, 1.0f);
-		m_ppObjects[i]->m_pSkinnedAnimationController->SetTrackPosition(0, 0.85f);
+		m_PPEObjects[i] = new CAngrybotObject(pd3dDevice, pd3dCommandList, pd3dGraphicsRootSignature, pAngrybotModel, 1);
+		m_PPEObjects[i]->m_pSkinnedAnimationController->SetTrackAnimationSet(0, 0);
+		m_PPEObjects[i]->m_pSkinnedAnimationController->SetTrackSpeed(0, 1.0f);
+		m_PPEObjects[i]->m_pSkinnedAnimationController->SetTrackPosition(0, 0.85f);
 		XMFLOAT3 xmf3Position = XMFLOAT3(490.0f, 0.0f, 630.0f);
 		xmf3Position.y = pTerrain->GetHeight(xmf3Position.x, xmf3Position.z);
-		//m_ppObjects[i]->SetMesh(pCubeMesh);
-		m_ppObjects[i]->SetPosition(xmf3Position);
-		m_ppObjects[i]->SetScale(1.0f, 1.0f, 1.0f);
+		m_PPEObjects[i]->SetPosition(xmf3Position);
+		m_PPEObjects[i]->SetScale(1.0f, 1.0f, 1.0f);
 	}
 
 	/*
@@ -677,9 +690,6 @@ void CEthanObjectsShader::BuildObjects(ID3D12Device *pd3dDevice, ID3D12GraphicsC
 	float fxPitch = 7.0f * 2.5f;
 	float fzPitch = 7.0f * 2.5f;
 
-	CCubeMeshDiffused* pCubeMesh = new CCubeMeshDiffused(pd3dDevice, pd3dCommandList,
-		1.0f, 1.0f, 1.0f);
-
 	CHeightMapTerrain *pTerrain = (CHeightMapTerrain *)pContext;
 
 	CLoadedModelInfo *pEthanModel = pModel;
@@ -697,52 +707,92 @@ void CEthanObjectsShader::BuildObjects(ID3D12Device *pd3dDevice, ID3D12GraphicsC
 			XMFLOAT3 xmf3Position = XMFLOAT3(fxPitch*x + 290.0f, 5100.0f, 750.0f + fzPitch * z);
 			xmf3Position.y = pTerrain->GetHeight(xmf3Position.x, xmf3Position.z);
 			m_ppObjects[nObjects]->SetScale(1.0f, 1.0f, 1.0f);
-			//m_ppObjects[nObjects]->SetMesh(pCubeMesh);
 			m_ppObjects[nObjects]->SetRadius(5.5f);
 			m_ppObjects[nObjects++]->SetPosition(xmf3Position);
 		}
     }
 
+	m_nEObject = 1;
+
+	m_PPEObjects = new CGameObject * [m_nEObject];
+
+	CLoadedModelInfo* pAngrybotModel = CGameObject::LoadGeometryAndAnimationFromFile(pd3dDevice, pd3dCommandList, pd3dGraphicsRootSignature, "Model/Monster.bin", NULL);
+	for (int i = 0; i < m_nEObject; i++)
+	{
+		m_PPEObjects[i] = new CAngrybotObject(pd3dDevice, pd3dCommandList, pd3dGraphicsRootSignature, pAngrybotModel, 1);
+		m_PPEObjects[i]->m_pSkinnedAnimationController->SetTrackAnimationSet(0, 0);
+		m_PPEObjects[i]->m_pSkinnedAnimationController->SetTrackSpeed(0, 1.0f);
+		m_PPEObjects[i]->m_pSkinnedAnimationController->SetTrackPosition(0, 0.85f);
+		XMFLOAT3 xmf3Position = XMFLOAT3(490.0f, 0.0f, 630.0f);
+		xmf3Position.y = pTerrain->GetHeight(xmf3Position.x, xmf3Position.z);
+		m_PPEObjects[i]->SetRadius(200.0f);
+		m_PPEObjects[i]->SetPosition(xmf3Position);
+		m_PPEObjects[i]->SetScale(1.0f, 1.0f, 1.0f);
+	}
+
 	CreateShaderVariables(pd3dDevice, pd3dCommandList);
 
 	if (!pModel && pEthanModel) delete pEthanModel;
-
+	if (!pModel && pAngrybotModel) delete pAngrybotModel;
 }
 
 void CEthanObjectsShader::AnimateObjects(float fTimeElapsed)
 {
 	m_fElapsedTime = fTimeElapsed;
 
+	
+
+
 	for (int i = 0; i < m_nObjects; ++i)
 	{
 		m_ppObjects[i]->Animate(m_fElapsedTime);
 		m_ppObjects[i]->UpdateTransform(NULL);
+
 		//m_ppObjects[i]->SetTarget(m_pPlayer->GetPosition(), false);
 		
-		if (pSelectedObject)
+		if (TargetEmemy)
 		{
+			for (int j = 0; j < m_nEObject; j++)
+			{
+				float epDistance = m_PPEObjects[j]->CalculateDistance(m_pPlayer->GetPosition());
+				if (epDistance <= m_PPEObjects[j]->GetRadius())
+				{
+					XMFLOAT3 EPosition = m_PPEObjects[j]->GetPosition();
+					XMFLOAT3 ERandomPosition = RandomPositionInSphere(EPosition, Random(50, 50));
+					m_ppObjects[i]->SetTarget(ERandomPosition, false);
+					m_ppObjects[i]->m_pSkinnedAnimationController->SetTrackAnimationSet(0, 1);
+				}
+				float eeDistance = m_ppObjects[i]->CalculateDistance(m_PPEObjects[j]->GetPosition());
+				if (eeDistance <= m_PPEObjects[j]->GetCognizance())
+				{
+					m_ppObjects[i]->SetTarget(m_PPEObjects[j]->GetPosition(), true);
+					m_ppObjects[i]->m_pSkinnedAnimationController->SetTrackAnimationSet(0, 2);
+				}
+			}
+
+			/*
 			XMFLOAT3 SelectPos;
 			SelectPos.x = pSelectedObject->m_xmf4x4ToParent._41;
 			SelectPos.y = pSelectedObject->m_xmf4x4ToParent._42;
 			SelectPos.z = pSelectedObject->m_xmf4x4ToParent._43;
 			m_ppObjects[i]->SetTarget(SelectPos, false);
+			*/
 			
 		}
 		else
 		{
-			
 			XMFLOAT3 PPosition = m_pPlayer->GetPosition();
 			XMFLOAT3 RandomPosition = RandomPositionInSphere(PPosition, Random(50, 50));
 			m_ppObjects[i]->SetTarget(RandomPosition, false);
 			m_ppObjects[i]->m_pSkinnedAnimationController->SetTrackAnimationSet(0, 1);
 			CheckObjectByPlayerCollisions();
-			
 		}
 	}
 }
 
 void CEthanObjectsShader::CheckObjectByPlayerCollisions()
 {
+	
 	for (int i = 0; i < m_nObjects; ++i)
 	{
 		
@@ -765,6 +815,33 @@ void CEthanObjectsShader::CheckObjectByPlayerCollisions()
 			m_ppObjects[i]->m_pSkinnedAnimationController->SetTrackAnimationSet(0, 0);
 		}
 		
+	}
+}
+
+void CEthanObjectsShader::CheckObjectByEnmemy()
+{
+	for (int i = 0; i < m_nObjects; ++i)
+	{
+
+		float fDistance = m_ppObjects[i]->CalculateDistance(m_pPlayer->GetPosition());
+		/*
+		if (fDistance <= (m_ppObjects[i]->GetRadius() + m_pPlayer->GetRadius())) {
+			XMFLOAT3 xmf3PlayerPos = m_pPlayer->GetPosition();
+			XMFLOAT3 xmf3ObjPos = m_ppObjects[i]->GetPosition();
+
+			XMFLOAT3 xmf3Impulse = XMFLOAT3(xmf3PlayerPos.x - xmf3ObjPos.x, xmf3PlayerPos.y - xmf3ObjPos.y, xmf3PlayerPos.z - xmf3ObjPos.z);
+			xmf3Impulse.x *= 10.0f;
+			xmf3Impulse.y *= 10.0f;
+			xmf3Impulse.z *= 10.0f;
+			m_pPlayer->SetVelocity(xmf3Impulse);
+		}
+		*/
+		if (fDistance <= m_ppObjects[i]->GetCognizance())
+		{
+			m_ppObjects[i]->SetTarget(m_pPlayer->GetPosition(), true);
+			m_ppObjects[i]->m_pSkinnedAnimationController->SetTrackAnimationSet(0, 0);
+		}
+
 	}
 }
 

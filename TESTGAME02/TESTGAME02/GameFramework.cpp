@@ -291,7 +291,7 @@ void CGameFramework::OnProcessingMouseMessage(HWND hWnd, UINT nMessageID, WPARAM
 		case WM_LBUTTONDOWN:
 		case WM_RBUTTONDOWN:
 			//마우스가 눌려지면 마우스 픽킹을 하여 선택한 게임 객체를 찾는다. 
-			m_pSelectedObject = m_pScene->PickObjectPointedByCursor(LOWORD(lParam), HIWORD(lParam), m_pCamera);
+			//m_pSelectedObject = m_pScene->PickObjectPointedByCursor(LOWORD(lParam), HIWORD(lParam), m_pCamera);
 			::SetCapture(hWnd);
 			::GetCursorPos(&m_ptOldCursorPos);
 			break;
@@ -329,6 +329,20 @@ void CGameFramework::OnProcessingKeyboardMessage(HWND hWnd, UINT nMessageID, WPA
 					break;
 				default:
 					break;
+			}
+			break;
+		case WM_KEYDOWN:
+			switch (wParam)
+			{
+			case 'z':
+			case 'Z':
+				m_pScene->m_ppShaders[0]->GetTargetEnemy();
+				break;
+
+			case 'x':
+			case 'X':
+				m_pScene->m_ppShaders[0]->GetPlayerMode();
+				break;
 			}
 		default:
 			break;

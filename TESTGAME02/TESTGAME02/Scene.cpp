@@ -95,7 +95,7 @@ void CScene::BuildObjects(ID3D12Device *pd3dDevice, ID3D12GraphicsCommandList *p
 
 	XMFLOAT3 xmf3Scale(108.0f, 20.0f, 108.0f);
 	XMFLOAT4 xmf4Color(0.2f, 0.2f, 0.2f, 0.0f);
-	m_pTerrain = new CHeightMapTerrain(pd3dDevice, pd3dCommandList, m_pd3dGraphicsRootSignature, _T("Terrain/Plane001HeightMap.raw"), 1025, 1025, xmf3Scale, xmf4Color);
+	m_pTerrain = new CHeightMapTerrain(pd3dDevice, pd3dCommandList, m_pd3dGraphicsRootSignature, _T("Terrain/Plane001HeightMap.raw"), 257, 257, xmf3Scale, xmf4Color);
 	/*
 	m_nHierarchicalGameObjects = 21;
 	m_ppHierarchicalGameObjects = new CGameObject*[m_nHierarchicalGameObjects];
@@ -239,7 +239,7 @@ void CScene::BuildObjects(ID3D12Device *pd3dDevice, ID3D12GraphicsCommandList *p
 	
 	*/
 ///*
-	m_nShaders = 2;
+	m_nShaders = 1;
 	m_ppShaders = new CSkinnedAnimationObjectsShader *[m_nShaders];
 
 	CLoadedModelInfo* pEthanModel = CGameObject::LoadGeometryAndAnimationFromFile(pd3dDevice, pd3dCommandList, m_pd3dGraphicsRootSignature, "Model/Monster.bin", NULL);
@@ -249,15 +249,15 @@ void CScene::BuildObjects(ID3D12Device *pd3dDevice, ID3D12GraphicsCommandList *p
 
 	m_ppShaders[0] = pEthanObjectsShader;
 
-	CLoadedModelInfo* pMonsterModel = CGameObject::LoadGeometryAndAnimationFromFile(pd3dDevice, pd3dCommandList, m_pd3dGraphicsRootSignature, "Model/Monster.bin", NULL);
+	//CLoadedModelInfo* pMonsterModel = CGameObject::LoadGeometryAndAnimationFromFile(pd3dDevice, pd3dCommandList, m_pd3dGraphicsRootSignature, "Model/Monster.bin", NULL);
 
-	CAngrybotObjectsShader* pAngrybotObjectShader = new CAngrybotObjectsShader();
-	pAngrybotObjectShader->BuildObjects(pd3dDevice, pd3dCommandList, m_pd3dGraphicsRootSignature, pMonsterModel, m_pTerrain);
+	//CAngrybotObjectsShader* pAngrybotObjectShader = new CAngrybotObjectsShader();
+	//pAngrybotObjectShader->BuildObjects(pd3dDevice, pd3dCommandList, m_pd3dGraphicsRootSignature, pMonsterModel, m_pTerrain);
 
-	m_ppShaders[1] = pAngrybotObjectShader;
+	//m_ppShaders[1] = pAngrybotObjectShader;
 //*/
 	if (pEthanModel) delete pEthanModel;
-	if (pMonsterModel) delete pMonsterModel;
+	//if (pMonsterModel) delete pMonsterModel;
 
 	CreateShaderVariables(pd3dDevice, pd3dCommandList);
 }

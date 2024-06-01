@@ -178,9 +178,18 @@ public:
 	virtual CGameObject* PickObjectByRayIntersection(XMFLOAT3& xmf3PickPosition,
 		XMFLOAT4X4& xmf4x4View, float* pfNearHitDistance);
 
+	bool TargetEmemy = false;
+
+	bool GetTargetMode() { return TargetEmemy; }
+	bool GetTargetEnemy() { return TargetEmemy = true; }
+	bool GetPlayerMode() { return TargetEmemy = false; }
+
 protected:
 	CGameObject						**m_ppObjects = 0;
 	int								m_nObjects = 0;
+
+	CGameObject						**m_PPEObjects = 0;
+	int								m_nEObject = 0;
 };
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -196,10 +205,9 @@ public:
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //
-class CEthanObjectsShader : public CSkinnedAnimationObjectsShader
+class CEthanObjectsShader : public CAngrybotObjectsShader
 {
 public:
-	bool						m_PTarget = false;
 
 	CEthanObjectsShader();
 	virtual ~CEthanObjectsShader();
@@ -208,7 +216,8 @@ public:
 
 	virtual void AnimateObjects(float fTimeElapsed);
 	void CheckObjectByPlayerCollisions();
-
+	void CheckObjectByEnmemy();
+	
 	
 };
 
