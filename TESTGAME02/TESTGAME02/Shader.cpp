@@ -728,6 +728,7 @@ void CEthanObjectsShader::BuildObjects(ID3D12Device *pd3dDevice, ID3D12GraphicsC
 		m_PPEObjects[i]->SetRadius(200.0f);
 		m_PPEObjects[i]->SetPosition(xmf3Position);
 		m_PPEObjects[i]->SetScale(1.0f, 1.0f, 1.0f);
+		m_PPEObjects[i]->SetHPCount(10);
 	}
 
 	CreateShaderVariables(pd3dDevice, pd3dCommandList);
@@ -739,9 +740,6 @@ void CEthanObjectsShader::BuildObjects(ID3D12Device *pd3dDevice, ID3D12GraphicsC
 void CEthanObjectsShader::AnimateObjects(float fTimeElapsed)
 {
 	m_fElapsedTime = fTimeElapsed;
-
-	
-
 
 	for (int i = 0; i < m_nObjects; ++i)
 	{
@@ -767,8 +765,12 @@ void CEthanObjectsShader::AnimateObjects(float fTimeElapsed)
 				{
 					m_ppObjects[i]->SetTarget(m_PPEObjects[j]->GetPosition(), true);
 					m_ppObjects[i]->m_pSkinnedAnimationController->SetTrackAnimationSet(0, 2);
+					m_ppObjects[i]->GetAttackMode();
+					m_PPEObjects[j]->m_TargetTime += fTimeElapsed;
 				}
 			}
+
+			CheckObjectByEnmemy();
 
 			/*
 			XMFLOAT3 SelectPos;
@@ -794,21 +796,9 @@ void CEthanObjectsShader::CheckObjectByPlayerCollisions()
 {
 	
 	for (int i = 0; i < m_nObjects; ++i)
-	{
-		
+	{		
 		float fDistance = m_ppObjects[i]->CalculateDistance(m_pPlayer->GetPosition());
-		/*
-		if (fDistance <= (m_ppObjects[i]->GetRadius() + m_pPlayer->GetRadius())) {
-			XMFLOAT3 xmf3PlayerPos = m_pPlayer->GetPosition();
-			XMFLOAT3 xmf3ObjPos = m_ppObjects[i]->GetPosition();
 
-			XMFLOAT3 xmf3Impulse = XMFLOAT3(xmf3PlayerPos.x - xmf3ObjPos.x, xmf3PlayerPos.y - xmf3ObjPos.y, xmf3PlayerPos.z - xmf3ObjPos.z);
-			xmf3Impulse.x *= 10.0f;
-			xmf3Impulse.y *= 10.0f;
-			xmf3Impulse.z *= 10.0f;
-			m_pPlayer->SetVelocity(xmf3Impulse);
-		}
-		*/
 		if (fDistance <= m_ppObjects[i]->GetCognizance())
 		{
 			m_ppObjects[i]->SetTarget(m_pPlayer->GetPosition(), true);
@@ -820,28 +810,39 @@ void CEthanObjectsShader::CheckObjectByPlayerCollisions()
 
 void CEthanObjectsShader::CheckObjectByEnmemy()
 {
-	for (int i = 0; i < m_nObjects; ++i)
+	for (int j = 0; j < m_nEObject; j++)
 	{
-
-		float fDistance = m_ppObjects[i]->CalculateDistance(m_pPlayer->GetPosition());
-		/*
-		if (fDistance <= (m_ppObjects[i]->GetRadius() + m_pPlayer->GetRadius())) {
-			XMFLOAT3 xmf3PlayerPos = m_pPlayer->GetPosition();
-			XMFLOAT3 xmf3ObjPos = m_ppObjects[i]->GetPosition();
-
-			XMFLOAT3 xmf3Impulse = XMFLOAT3(xmf3PlayerPos.x - xmf3ObjPos.x, xmf3PlayerPos.y - xmf3ObjPos.y, xmf3PlayerPos.z - xmf3ObjPos.z);
-			xmf3Impulse.x *= 10.0f;
-			xmf3Impulse.y *= 10.0f;
-			xmf3Impulse.z *= 10.0f;
-			m_pPlayer->SetVelocity(xmf3Impulse);
-		}
-		*/
-		if (fDistance <= m_ppObjects[i]->GetCognizance())
+		if (m_PPEObjects[j]->IsDamageOrReflective())
 		{
-			m_ppObjects[i]->SetTarget(m_pPlayer->GetPosition(), true);
-			m_ppObjects[i]->m_pSkinnedAnimationController->SetTrackAnimationSet(0, 0);
-		}
+			for (int i = 0; i < m_nObjects; i++)
+			{
+				if (m_ppObjects[i]->GetModes() == true)
+				{
+					attackedObject += 1;
+				}
+			}
 
+			if (m_PPEObjects[j]->GetHPCount() == attackedObject)
+			{
+				GetPlayerMode();
+				m_PPEObjects[j]->Reset();
+			}
+			else
+			{
+				XMFLOAT3 xmf3EnemyPos = m_PPEObjects[j]->GetPosition();
+				for (int i = 0; i < m_nObjects; i++)
+				{
+					XMFLOAT3 xmf3ObjPos = m_ppObjects[i]->GetPosition();
+					XMFLOAT3 xmf3Impulse = XMFLOAT3(xmf3EnemyPos.x - xmf3ObjPos.x, xmf3ObjPos.y, xmf3EnemyPos.z - xmf3ObjPos.z);
+					xmf3Impulse.x *= 10.0f;
+					xmf3Impulse.z *= 10.0f;
+					m_ppObjects[i]->SetVelocity(xmf3Impulse);
+				}
+				GetPlayerMode();
+				m_PPEObjects[j]->Reset();
+			}
+		}
+		
 	}
 }
 

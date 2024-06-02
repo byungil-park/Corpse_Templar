@@ -184,6 +184,8 @@ public:
 	bool GetTargetEnemy() { return TargetEmemy = true; }
 	bool GetPlayerMode() { return TargetEmemy = false; }
 
+	int attackedObject = 0;
+
 protected:
 	CGameObject						**m_ppObjects = 0;
 	int								m_nObjects = 0;

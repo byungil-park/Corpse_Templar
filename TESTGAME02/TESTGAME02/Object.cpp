@@ -1189,6 +1189,12 @@ void CGameObject::LoadMaterialsFromFile(ID3D12Device *pd3dDevice, ID3D12Graphics
 	}
 }
 
+void CGameObject::Reset()
+{
+	m_EndTime = 60.0f;
+	m_TargetTime = 0.0f;
+}
+
 CGameObject *CGameObject::LoadFrameHierarchyFromFile(ID3D12Device *pd3dDevice, ID3D12GraphicsCommandList *pd3dCommandList, ID3D12RootSignature *pd3dGraphicsRootSignature, CGameObject *pParent, FILE *pInFile, CShader *pShader, int *pnSkinnedMeshes)
 {
 	char pstrToken[64] = { '\0' };
@@ -1639,6 +1645,8 @@ CAngrybotObject::CAngrybotObject(ID3D12Device *pd3dDevice, ID3D12GraphicsCommand
 	m_pSkinnedAnimationController->m_pRootMotionObject = pAngrybotModel->m_pModelRootObject->FindFrame("shield");
 
 	m_fCognizance = 10.0f;
+
+	m_EndTime = 60.0f;
 }
 
 CAngrybotObject::~CAngrybotObject()
@@ -1685,6 +1693,7 @@ CEthanAnimationController::CEthanAnimationController(ID3D12Device* pd3dDevice, I
 
 CEthanAnimationController::~CEthanAnimationController()
 {
+
 }
 
 #define _WITH_DEBUG_ROOT_MOTION
